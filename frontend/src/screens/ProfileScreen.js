@@ -36,7 +36,16 @@ export default function ProfileScreen() {
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.put(
+      if (password !== confirmPassword) {
+        toast.error('Passwords do not match');
+        return;
+      }
+      if (password.length < 6 && password)
+      {
+        toast.error('Password length is less than 6 characters !')
+        return
+      }
+      const { data } = await axios.post(
         '/api/users/profile',
         {
           name,
