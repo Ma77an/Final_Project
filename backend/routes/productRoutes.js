@@ -12,11 +12,10 @@ productRouter.get('/', async (req, res) => {
 
 productRouter.post("/save",async (req,res)=> {
   console.log(req.body);
-  req.body.forEach(async (element) => {
-    const newprod = new Product(element)
+    const newprod = new Product(req.body)
     const prod = await newprod.save()
-    res.send(prod)
-  });
+    console.log("product " + prod + "saved !");
+  res.send(req.body)
 })
 
 productRouter.post(
