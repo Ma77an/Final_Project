@@ -6,7 +6,7 @@ import { generateToken, isAdmin, isAuth } from '../utils.js';
 import "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, Timestamp, query, where, getDoc, getDocs } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signOut, updateCurrentUser, updateEmail, updatePassword, updateProfile } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCTMsWuUGo0LMrDR0nY-TmquHoyxIA-CLM",
@@ -136,18 +136,22 @@ userRouter.post(
   })
 );
 
-userRouter.put(
+userRouter.post(
   '/profile',
   isAuth,
   expressAsyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
+    try {
+      const user = await User.findById(req.user._id);
+    
     if (user) {
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
+      
       if (req.body.password) {
         user.password = bcrypt.hashSync(req.body.password, 8);
+        await updatePassword(auth.currentUser,req.body.password)
       }
-
+      await updateEmail(auth.currentUser,req.body.email || user.email)
       const updatedUser = await user.save();
       res.send({
         _id: updatedUser._id,
@@ -159,6 +163,10 @@ userRouter.put(
     } else {
       res.status(404).send({ message: 'User not found' });
     }
+    } catch (error) {
+      console.log(error);
+    }
+    
   })
 );
 
